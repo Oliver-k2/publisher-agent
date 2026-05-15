@@ -1,3 +1,5 @@
+import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -57,25 +59,48 @@ live 모드로 전환하면 Codex OAuth 세션이 같은 작업지시서를 읽�
 
 
 def _run_live(*, root: Path, task_file: Path, expected_output: Path) -> CodexRunResult:
+    codex_executable = _resolve_codex_executable()
+    if codex_executable is None:
+        return CodexRunResult(
+            success=False,
+            mode="live",
+            message=(
+                "Codex executable was not found. Run `codex --version` in the same terminal, "
+                "or set CODEX_COMMAND to the full codex.exe path. On this machine it is often "
+                "`C:\\Users\\user\\AppData\\Local\\OpenAI\\Codex\\bin\\codex.exe`."
+            ),
+            returncode=127,
+            expected_output=expected_output,
+        )
+
     task_prompt = (
         f"Read the task file at {task_file} and complete it exactly. "
         f"Write the required result to {expected_output}."
     )
     command = [
-        "codex",
+        str(codex_executable),
         "exec",
         "--skip-git-repo-check",
         "-C",
         str(root),
         task_prompt,
     ]
-    completed = subprocess.run(
-        command,
-        cwd=root,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError as exc:
+        return CodexRunResult(
+            success=False,
+            mode="live",
+            message=f"Codex executable could not be launched: {exc}",
+            returncode=127,
+            expected_output=expected_output,
+        )
     output = (completed.stdout + "\n" + completed.stderr).strip()
     return CodexRunResult(
         success=completed.returncode == 0,
@@ -84,3 +109,26 @@ def _run_live(*, root: Path, task_file: Path, expected_output: Path) -> CodexRun
         returncode=completed.returncode,
         expected_output=expected_output,
     )
+
+
+def _resolve_codex_executable() -> Path | None:
+    configured = os.environ.get("CODEX_COMMAND")
+    if configured:
+        configured_path = Path(configured)
+        if configured_path.exists():
+            return configured_path
+
+    discovered = shutil.which("codex")
+    if discovered:
+        return Path(discovered)
+
+    candidates = []
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        candidates.append(Path(local_app_data) / "OpenAI" / "Codex" / "bin" / "codex.exe")
+    candidates.append(Path.home() / "AppData" / "Local" / "OpenAI" / "Codex" / "bin" / "codex.exe")
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None

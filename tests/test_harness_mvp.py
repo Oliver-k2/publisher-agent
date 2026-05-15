@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from harness.codex_runner import run_codex
 from harness.logger import append_run_log
@@ -97,6 +98,28 @@ class HarnessMvpTests(unittest.TestCase):
             self.assertIn("# Dummy result: outliner", expected_output.read_text(encoding="utf-8"))
             self.assertTrue(check.success)
             self.assertEqual(check.path, expected_output)
+
+    def test_live_runner_reports_missing_codex_without_crashing(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            task_file = root / "tasks" / "current_task.md"
+            expected_output = root / "projects" / "book_001" / "story_bible.md"
+            task_file.parent.mkdir(parents=True)
+            task_file.write_text("## Mission\nPlan the book.\n", encoding="utf-8")
+
+            with patch("harness.codex_runner._resolve_codex_executable", return_value=None):
+                run = run_codex(
+                    root=root,
+                    task_file=task_file,
+                    expected_output=expected_output,
+                    role="planner",
+                    mode="live",
+                )
+
+            self.assertFalse(run.success)
+            self.assertEqual(run.returncode, 127)
+            self.assertIn("Codex executable was not found", run.message)
+            self.assertFalse(expected_output.exists())
 
 
     def test_result_checker_reports_missing_output_and_builds_correction_task(self):
