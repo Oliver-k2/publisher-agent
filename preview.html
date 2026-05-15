@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Codex 기반 AI 글쓰기 회사 Harness To-do List</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --ink: #111827;
+      --muted: #667085;
+      --line: #e5e7eb;
+      --blue: #2563eb;
+      --purple: #7c3aed;
+      --green: #16a34a;
+      --orange: #f59e0b;
+      --red: #ef4444;
+      --soft-blue: #eff6ff;
+      --soft-purple: #f5f3ff;
+      --soft-green: #ecfdf5;
+      --soft-orange: #fffbeb;
+      --dark: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, #dbeafe 0, transparent 33%),
+        radial-gradient(circle at 100% 0%, #ede9fe 0, transparent 32%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 42px 20px 90px; }
+    header {
+      color: white;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8 52%, #7c3aed);
+      border-radius: 30px;
+      padding: 42px 36px;
+      box-shadow: 0 28px 90px rgba(15, 23, 42, .24);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 13px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.24);
+      background: rgba(255,255,255,.1);
+      color: #dbeafe;
+      font-size: 13px;
+    }
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(30px, 5vw, 54px);
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+    }
+    header p {
+      max-width: 940px;
+      margin: 0;
+      color: #e5e7eb;
+      font-size: 18px;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      font-size: 13px;
+    }
+    section {
+      margin-top: 26px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 16px 48px rgba(15, 23, 42, .06);
+    }
+    h2 { margin: 0 0 10px; font-size: 26px; letter-spacing: -0.03em; }
+    h3 { margin: 23px 0 10px; font-size: 19px; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); margin: 0 0 18px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: white;
+    }
+    .blue { background: var(--soft-blue); border-color: #bfdbfe; }
+    .purple { background: var(--soft-purple); border-color: #ddd6fe; }
+    .green { background: var(--soft-green); border-color: #bbf7d0; }
+    .orange { background: var(--soft-orange); border-color: #fde68a; }
+    .box strong { display: block; font-size: 17px; margin-bottom: 5px; }
+    .box p { margin: 0; color: var(--muted); font-size: 14px; }
+    .num {
+      width: 38px; height: 38px;
+      display: grid; place-items: center;
+      border-radius: 13px;
+      color: #fff;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      margin-bottom: 10px;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .step {
+      min-height: 90px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 9px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .step small {
+      display: block;
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    ol.timeline {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: phase;
+    }
+    ol.timeline > li {
+      position: relative;
+      margin-left: 22px;
+      padding: 0 0 23px 58px;
+      border-left: 2px solid var(--line);
+    }
+    ol.timeline > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+    ol.timeline > li::before {
+      counter-increment: phase;
+      content: counter(phase);
+      position: absolute;
+      left: -22px;
+      top: 0;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      color: white;
+      background: var(--dark);
+      font-weight: 900;
+      box-shadow: 0 10px 22px rgba(15,23,42,.16);
+    }
+    .task {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px 15px;
+      margin: 10px 0;
+    }
+    .task label {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 3px;
+      accent-color: var(--blue);
+      flex: 0 0 auto;
+    }
+    .task small {
+      display: block;
+      padding-left: 30px;
+      margin-top: 4px;
+      color: var(--muted);
+    }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-left: 6px;
+      vertical-align: 1px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 800;
+    }
+    .must { background: #fee2e2; color: #991b1b; }
+    .codex { background: #e0f2fe; color: #075985; }
+    .harness { background: #dcfce7; color: #166534; }
+    .mvp { background: #dbeafe; color: #1d4ed8; }
+    .future { background: #ede9fe; color: #6d28d9; }
+    .local { background: #fef3c7; color: #92400e; }
+    .note {
+      margin-top: 16px;
+      padding: 15px 17px;
+      border-radius: 16px;
+      border-left: 5px solid var(--blue);
+      background: #f8fafc;
+      color: #344054;
+    }
+    .note.warn { border-left-color: var(--orange); background: #fffbeb; }
+    .note.good { border-left-color: var(--green); background: #ecfdf5; }
+    pre {
+      white-space: pre-wrap;
+      overflow: auto;
+      padding: 16px;
+      background: #0b1020;
+      color: #e5e7eb;
+      border-radius: 16px;
+      font-size: 14px;
+    }
+    code {
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+    th, td {
+      text-align: left;
+      padding: 13px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th { background: #f8fafc; }
+    tr:last-child td { border-bottom: 0; }
+    .donebar {
+      position: sticky;
+      bottom: 16px;
+      margin-top: 26px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 18px 45px rgba(15,23,42,.13);
+    }
+    .bar {
+      flex: 1;
+      height: 12px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+    .bar div {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      transition: width .2s;
+    }
+    .progressText { min-width: 105px; text-align: right; font-weight: 800; }
+    footer { text-align: center; color: var(--muted); padding-top: 28px; font-size: 13px; }
+    @media (max-width: 980px) {
+      .col-3, .col-4, .col-6 { grid-column: span 12; }
+      .flow { grid-template-columns: 1fr; }
+      header, section { padding: 24px; border-radius: 20px; }
+      ol.timeline > li { padding-left: 42px; }
+    }
+    @media print {
+      body { background: white; }
+      header, section { box-shadow: none; }
+      .donebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Codex OAuth · Local Harness · Writing Company</div>
+      <h1>Codex 기반 AI 글쓰기 회사 Harness To-do List</h1>
+      <p>
+        이 프로젝트는 웹앱이 아니다. AI API를 직접 호출하지도 않는다.
+        ChatGPT 계정으로 로그인된 Codex를 “글쓰기 직원”으로 사용하고,
+        로컬 하네스가 작업지시서 생성, 역할 분배, 파일 저장, 검수 흐름을 관리하는
+        터미널 기반 글쓰기 회사 시스템을 만든다.
+      </p>
+      <div class="chips">
+        <span class="chip">핵심: Codex OAuth</span>
+        <span class="chip">UI: 터미널/CLI</span>
+        <span class="chip">중심: Harness</span>
+        <span class="chip">산출물: 완성 원고 파일</span>
+        <span class="chip">미래: CrewAI 자동화</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>0. 프로젝트 정의</h2>
+      <p class="sub">정확한 목표를 먼저 고정한다. 이 프로젝트는 “AI 글쓰기 회사 운영 프로그램”이다.</p>
+      <div class="grid">
+        <div class="box blue col-4">
+          <div class="num">1</div>
+          <strong>사용자는 CEO</strong>
+          <p>장르, 방향, 승인, 수정 요청만 한다. 직접 원고를 쓰지 않는다.</p>
+        </div>
+        <div class="box green col-4">
+          <div class="num">2</div>
+          <strong>하네스는 회사 운영 시스템</strong>
+          <p>작업지시서 생성, 단계 관리, 파일 저장, 다음 작업 지시를 담당한다.</p>
+        </div>
+        <div class="box purple col-4">
+          <div class="num">3</div>
+          <strong>Codex는 실행 직원</strong>
+          <p>ChatGPT OAuth 로그인 상태의 Codex가 로컬 파일을 읽고 원고 파일을 작성한다.</p>
+        </div>
+      </div>
+      <div class="note good">
+        <strong>최종 목표:</strong> 터미널에서 <code>npm run company</code> 또는 <code>python main.py</code> 실행 →
+        “새 책 만들기 / 기획 / 목차 / 집필 / 편집 / 검수 / 최종본” 메뉴 선택 →
+        하네스가 Codex에 작업을 맡기고 결과 파일을 받아 책 완성본을 만든다.
+      </div>
+    </section>
+
+    <section>
+      <h2>1. 시스템 작동 흐름</h2>
+      <p class="sub">AI API 호출 대신, 하네스가 Codex에게 파일 기반 작업을 시키는 구조다.</p>
+      <div class="flow">
+        <div class="step">CEO 명령 입력<small>터미널 질문</small></div>
+        <div class="step">하네스 상태 확인<small>project.json</small></div>
+        <div class="step">작업지시서 생성<small>tasks/current.md</small></div>
+        <div class="step">Codex 실행<small>codex exec</small></div>
+        <div class="step">원고 파일 작성<small>projects/book</small></div>
+        <div class="step">검수 로그 저장<small>logs</small></div>
+        <div class="step">CEO 승인 요청<small>수정/진행</small></div>
+        <div class="step">최종본 패키징<small>final.md</small></div>
+      </div>
+      <div class="note warn">
+        <strong>중요:</strong> 하네스가 GPT 모델을 직접 부르는 것이 아니다. 하네스는 Codex가 읽을 명령서 파일을 만들고,
+        Codex CLI를 실행시키며, Codex가 만든 결과 파일을 정리한다.
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 글쓰기 회사 직원 구성</h2>
+      <p class="sub">각 직원은 별도의 AI API 호출 객체가 아니라, Codex에게 부여하는 역할 프롬프트와 작업지시서다.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>직원</th>
+            <th>역할</th>
+            <th>하네스에서의 구현</th>
+            <th>결과 파일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CEO</td>
+            <td>사용자. 방향, 승인, 취향 판단</td>
+            <td>터미널 입력 / 승인 메뉴</td>
+            <td>project.json의 decisions</td>
+          </tr>
+          <tr>
+            <td>Chief Producer</td>
+            <td>전체 작업 순서 결정</td>
+            <td>prompts/producer.md + workflow</td>
+            <td>next_action.md</td>
+          </tr>
+          <tr>
+            <td>기획자</td>
+            <td>작품 컨셉, 독자층, 세계관 설계</td>
+            <td>prompts/planner.md</td>
+            <td>story_bible.md</td>
+          </tr>
+          <tr>
+            <td>구성 작가</td>
+            <td>목차, 챕터별 사건, 갈등 구조 설계</td>
+            <td>prompts/outliner.md</td>
+            <td>outline.md</td>
+          </tr>
+          <tr>
+            <td>메인 작가</td>
+            <td>실제 본문 초안 작성</td>
+            <td>prompts/writer.md</td>
+            <td>chapters/ch001_draft.md</td>
+          </tr>
+          <tr>
+            <td>편집자</td>
+            <td>문장, 몰입도, 장면 연결 수정</td>
+            <td>prompts/editor.md</td>
+            <td>chapters/ch001_edited.md</td>
+          </tr>
+          <tr>
+            <td>설정 검수자</td>
+            <td>인물, 시간선, 세계관 오류 점검</td>
+            <td>prompts/continuity_checker.md</td>
+            <td>reviews/ch001_continuity.md</td>
+          </tr>
+          <tr>
+            <td>최종 편집자</td>
+            <td>전체 원고 통합, 최종본 정리</td>
+            <td>prompts/finalizer.md</td>
+            <td>final/book_final.md</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. 구축 To-do List</h2>
+      <p class="sub">초보 기준으로 이 순서대로 진행하면 된다. 처음 목표는 “Codex가 파일을 읽고 쓰는 글쓰기 회사 MVP”다.</p>
+
+      <ol class="timeline">
+        <li>
+          <h3>1단계: Codex OAuth 작업환경 확인</h3>
+          <div class="task"><label><input type="checkbox"><span>터미널에서 <code>codex</code> 실행 후 ChatGPT 계정 로그인 확인 <span class="tag codex">Codex</span></span></label><small>API key가 아니라 ChatGPT OAuth 로그인 상태로 사용하는 것이 핵심이다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>테스트 폴더에서 Codex가 파일을 읽고 수정할 수 있는지 확인 <span class="tag must">필수</span></span></label><small>예: README.md를 만들고 “이 파일에 한 줄 추가해줘”라고 시킨다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>codex exec</code> 같은 비대화형 실행 방식 가능 여부 확인 <span class="tag local">로컬실행</span></span></label><small>나중에 하네스가 Codex를 자동 실행하려면 필요하다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>Codex가 결과 파일을 지정 경로에 저장하도록 테스트</span></label><small>예: <code>results/test_result.md</code>에 답을 저장하게 한다.</small></div>
+        </li>
+
+        <li>
+          <h3>2단계: 프로젝트 폴더 구조 만들기</h3>
+          <div class="task"><label><input type="checkbox"><span><code>ai-writing-company</code> 프로젝트 폴더 생성 <span class="tag mvp">MVP</span></span></label><small>이 폴더가 회사 사무실이다. 모든 작업은 이 안에서만 진행한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>핵심 폴더 생성</span></label><small><code>harness</code>, <code>prompts</code>, <code>tasks</code>, <code>projects</code>, <code>results</code>, <code>logs</code>, <code>templates</code></small></div>
+          <div class="task"><label><input type="checkbox"><span><code>README.md</code>에 프로젝트 정의 작성</span></label><small>“이 프로젝트는 웹앱이 아니며, Codex OAuth 기반 로컬 글쓰기 회사다”라고 명시한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>TODO.md</code> 생성</span></label><small>현재 진행할 작업과 완료된 작업을 계속 기록한다.</small></div>
+        </li>
+
+        <li>
+          <h3>3단계: 하네스의 최소 기능 정의</h3>
+          <div class="task"><label><input type="checkbox"><span>상태 관리자 설계 <span class="tag harness">Harness</span></span></label><small><code>project.json</code>을 읽고 현재 단계, 최신 파일, 승인 여부를 관리한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>작업지시서 생성기 설계 <span class="tag harness">Harness</span></span></label><small>CEO 입력 + 역할 프롬프트 + 기존 원고를 합쳐 <code>tasks/current_task.md</code>를 만든다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>Codex 실행기 설계 <span class="tag harness">Harness</span></span></label><small>하네스가 터미널 명령으로 Codex를 실행한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>결과 수집기 설계</span></label><small>Codex가 만든 파일을 확인하고 최신 결과를 화면에 요약해 보여준다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>로그 기록기 설계</span></label><small>언제 어떤 역할로 어떤 작업을 실행했는지 <code>logs</code>에 남긴다.</small></div>
+        </li>
+
+        <li>
+          <h3>4단계: 직원별 프롬프트 카드 만들기</h3>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/producer.md</code> 작성</span></label><small>전체 작업 순서와 다음 작업 추천을 담당한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/planner.md</code> 작성</span></label><small>작품 컨셉, 장르, 주인공, 독자층, 세계관을 설계한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/outliner.md</code> 작성</span></label><small>전체 목차와 챕터별 사건 구조를 만든다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/writer.md</code> 작성</span></label><small>초안을 작성하되, 반드시 story_bible과 outline을 따른다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/editor.md</code> 작성</span></label><small>초안을 더 읽기 좋게 수정한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/continuity_checker.md</code> 작성</span></label><small>설정 오류와 모순을 찾아낸다.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>prompts/finalizer.md</code> 작성</span></label><small>최종 원고를 통합하고 형식을 정리한다.</small></div>
+        </li>
+
+        <li>
+          <h3>5단계: 터미널 메뉴형 하네스 만들기</h3>
+          <div class="task"><label><input type="checkbox"><span><code>main.py</code> 또는 <code>main.js</code> 생성 <span class="tag mvp">MVP</span></span></label><small>초보라면 Python 또는 Node.js 중 익숙한 하나만 선택한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>메인 메뉴 구현</span></label><small>1. 새 책 만들기 2. 기획하기 3. 목차 만들기 4. 챕터 쓰기 5. 편집하기 6. 검수하기 7. 최종본 만들기</small></div>
+          <div class="task"><label><input type="checkbox"><span>사용자 입력 받기</span></label><small>장르, 분위기, 목표 분량, 원하는 소재, 금지사항을 터미널에서 입력받는다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>메뉴 선택에 따라 작업지시서 자동 생성</span></label><small>사용자가 “기획하기”를 고르면 planner 역할의 작업지시서가 생성된다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>작업 완료 후 다음 추천 메뉴 표시</span></label><small>예: “기획서가 생성되었습니다. 다음은 목차 만들기를 추천합니다.”</small></div>
+        </li>
+
+        <li>
+          <h3>6단계: Codex 실행 연결</h3>
+          <div class="task"><label><input type="checkbox"><span>하네스에서 Codex 실행 명령을 호출하는 함수 만들기 <span class="tag codex">Codex</span></span></label><small>예: <code>run_codex(task_file)</code></small></div>
+          <div class="task"><label><input type="checkbox"><span>Codex에게 작업지시서 파일을 읽도록 명령</span></label><small>“tasks/current_task.md를 읽고, 지시된 출력 파일에 결과를 작성하라.”</small></div>
+          <div class="task"><label><input type="checkbox"><span>출력 파일 존재 여부 검사</span></label><small>Codex 실행 후 지정된 파일이 만들어졌는지 확인한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>실패 시 재시도용 작업지시서 생성</span></label><small>파일이 없거나 형식이 틀리면 “다시 작성하라”는 correction task를 만든다.</small></div>
+        </li>
+
+        <li>
+          <h3>7단계: 첫 번째 글쓰기 파이프라인 완성</h3>
+          <div class="task"><label><input type="checkbox"><span>새 책 프로젝트 생성 기능 구현</span></label><small><code>projects/book_001/project.json</code> 생성.</small></div>
+          <div class="task"><label><input type="checkbox"><span>기획자 실행 → <code>story_bible.md</code> 생성</span></label><small>장르, 주인공, 세계관, 말투, 금지사항이 정리된다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>구성 작가 실행 → <code>outline.md</code> 생성</span></label><small>5화 또는 10화 단위 목차부터 시작한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>메인 작가 실행 → 1화 초안 생성</span></label><small><code>chapters/ch001_draft.md</code></small></div>
+          <div class="task"><label><input type="checkbox"><span>편집자 실행 → 1화 편집본 생성</span></label><small><code>chapters/ch001_edited.md</code></small></div>
+          <div class="task"><label><input type="checkbox"><span>설정 검수자 실행 → 검수 리포트 생성</span></label><small><code>reviews/ch001_continuity.md</code></small></div>
+          <div class="task"><label><input type="checkbox"><span>최종 편집자 실행 → 1화 최종본 생성</span></label><small><code>chapters/ch001_final.md</code></small></div>
+        </li>
+
+        <li>
+          <h3>8단계: 품질관리 규칙 만들기</h3>
+          <div class="task"><label><input type="checkbox"><span>모든 작업지시서에 출력 경로를 강제한다. <span class="tag must">필수</span></span></label><small>Codex가 엉뚱한 곳에 글을 쓰지 않도록 한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>모든 원고에 버전명을 붙인다.</span></label><small>draft, edited, checked, final을 구분한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>Story Bible 업데이트 규칙을 만든다.</span></label><small>새 설정이 생기면 반드시 story_bible.md에 반영한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>금지사항 검수 규칙을 만든다.</span></label><small>사용자가 금지한 소재, 톤, 표현을 검수한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>최종본 생성 전 필수 검수 체크리스트를 만든다.</span></label><small>설정 오류, 문체 일관성, 챕터 연결, 미완성 문장 확인.</small></div>
+        </li>
+
+        <li>
+          <h3>9단계: 반복 생산 구조 만들기</h3>
+          <div class="task"><label><input type="checkbox"><span>2화부터 N화까지 같은 파이프라인 반복</span></label><small>ch002_draft → ch002_edited → ch002_final 순서.</small></div>
+          <div class="task"><label><input type="checkbox"><span>이전 화 요약 파일 생성</span></label><small>다음 화 작성 시 전체 원고를 다 읽게 하지 말고 요약을 제공한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>챕터별 상태를 project.json에 저장</span></label><small>각 화가 draft인지 final인지 추적한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>중간에 CEO 수정 요청을 반영하는 메뉴 추가</span></label><small>“주인공 성격을 더 냉정하게”, “분위기를 어둡게” 같은 변경을 반영한다.</small></div>
+        </li>
+
+        <li>
+          <h3>10단계: 최종본 패키징</h3>
+          <div class="task"><label><input type="checkbox"><span>최종본 통합 기능 만들기</span></label><small>각 챕터 final 파일을 합쳐 <code>final/book_final.md</code> 생성.</small></div>
+          <div class="task"><label><input type="checkbox"><span>제목, 목차, 저자 메모, 작품 소개 자동 생성</span></label><small>출판사 느낌이 나도록 패키지화한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>TXT/Markdown 출력 지원</span></label><small>처음에는 md/txt만 충분하다. docx/pdf는 나중에 붙인다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>전체 프로젝트 백업 기능 추가</span></label><small>작업 중간 결과가 사라지지 않게 한다.</small></div>
+        </li>
+
+        <li>
+          <h3>11단계: 미래 CrewAI 자동화 대비</h3>
+          <div class="task"><label><input type="checkbox"><span>각 직원 역할을 함수 단위로 분리 <span class="tag future">미래</span></span></label><small>나중에 CrewAI Agent로 바꾸기 쉽게 한다.</small></div>
+          <div class="task"><label><input type="checkbox"><span>작업 단계를 명확한 workflow로 저장</span></label><small>planning → outlining → drafting → editing → checking → finalizing.</small></div>
+          <div class="task"><label><input type="checkbox"><span>CEO 승인 단계를 옵션화</span></label><small>초기에는 수동 승인, 나중에는 자동 승인 모드.</small></div>
+          <div class="task"><label><input type="checkbox"><span><code>future_crewai</code> 폴더에 설계 메모 저장</span></label><small>지금 구현하지 말고, 나중에 어떤 구조로 옮길지만 기록한다.</small></div>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>4. 추천 폴더 구조</h2>
+      <p class="sub">이 구조는 Codex가 읽고 쓰기 쉽고, 나중에 CrewAI로 옮기기도 쉽다.</p>
+      <pre>ai-writing-company/
+├─ README.md
+├─ TODO.md
+├─ main.py                      # 터미널 메뉴형 하네스
+├─ harness/
+│  ├─ state_manager.py           # project.json 읽기/쓰기
+│  ├─ task_builder.py            # 작업지시서 생성
+│  ├─ codex_runner.py            # Codex 실행
+│  ├─ result_checker.py          # 결과 파일 확인
+│  ├─ logger.py                  # 실행 로그 기록
+│  └─ workflow.py                # 단계 순서 관리
+├─ prompts/
+│  ├─ producer.md
+│  ├─ planner.md
+│  ├─ outliner.md
+│  ├─ writer.md
+│  ├─ editor.md
+│  ├─ continuity_checker.md
+│  └─ finalizer.md
+├─ tasks/
+│  ├─ current_task.md
+│  └─ history/
+├─ projects/
+│  └─ book_001/
+│     ├─ project.json
+│     ├─ story_bible.md
+│     ├─ outline.md
+│     ├─ summaries/
+│     ├─ chapters/
+│     │  ├─ ch001_draft.md
+│     │  ├─ ch001_edited.md
+│     │  └─ ch001_final.md
+│     ├─ reviews/
+│     └─ final/
+│        └─ book_final.md
+├─ logs/
+└─ future_crewai/
+   ├─ design_note.md
+   ├─ agents.py
+   ├─ tasks.py
+   └─ crew.py</pre>
+    </section>
+
+    <section>
+      <h2>5. Codex에게 바로 넣을 첫 명령</h2>
+      <p class="sub">아래는 Codex에게 프로젝트 뼈대를 만들게 하는 첫 프롬프트다.</p>
+      <pre>나는 바이브코딩 경력만 있는 초보자다.
+웹앱이 아니라, Codex 안에서 하네스를 활용해 돌아가는 'AI 글쓰기 회사'를 만들고 싶다.
+
+중요한 조건:
+- OpenAI API를 직접 사용하지 않는다.
+- ChatGPT 계정으로 OAuth 로그인된 Codex를 글쓰기 직원처럼 사용한다.
+- 하네스는 Codex가 읽을 작업지시서 파일을 만들고, Codex 실행을 도와주고, 결과 파일을 정리한다.
+- 사용자는 CEO 역할이다.
+- 사용자는 직접 원고를 쓰지 않고, 장르/방향/승인/수정 요청만 한다.
+- 처음에는 완전 자동화하지 않는다.
+- 나중에는 CrewAI 같은 멀티에이전트 자동화로 확장할 수 있게 구조를 잡는다.
+
+1차 목표:
+- Python 기반 터미널 메뉴형 MVP를 만든다.
+- 메뉴는 다음과 같다.
+  1. 새 책 만들기
+  2. 기획서 생성
+  3. 목차 생성
+  4. 챕터 초안 생성
+  5. 편집본 생성
+  6. 설정 검수
+  7. 최종본 생성
+  8. 현재 상태 보기
+- 각 메뉴는 실제 글을 직접 생성하지 말고, 먼저 tasks/current_task.md 작업지시서를 생성하게 한다.
+- Codex 실행 부분은 harness/codex_runner.py에 함수로 분리한다.
+- 지금 당장은 안전하게 dummy 모드도 지원하게 한다.
+- 나중에 codex exec로 연결할 수 있도록 TODO 주석을 남긴다.
+
+생성할 파일:
+- README.md
+- TODO.md
+- main.py
+- harness/state_manager.py
+- harness/task_builder.py
+- harness/codex_runner.py
+- harness/result_checker.py
+- harness/logger.py
+- harness/workflow.py
+- prompts/producer.md
+- prompts/planner.md
+- prompts/outliner.md
+- prompts/writer.md
+- prompts/editor.md
+- prompts/continuity_checker.md
+- prompts/finalizer.md
+- tasks/current_task.md
+- projects/book_001/project.json
+- projects/book_001/story_bible.md
+- projects/book_001/outline.md
+- future_crewai/design_note.md
+
+요구사항:
+- 초보자가 이해할 수 있도록 주석을 많이 달아라.
+- README.md에 실행 방법을 자세히 써라.
+- 각 메뉴가 어떤 파일을 만들고 읽는지 설명하라.
+- OpenAI API 키를 요구하지 마라.
+- Codex OAuth 로그인으로 작동하는 구조라는 점을 명확히 적어라.</pre>
+    </section>
+
+    <section>
+      <h2>6. 1차 MVP 성공 기준</h2>
+      <div class="grid">
+        <div class="box blue col-3">
+          <strong>하네스 실행</strong>
+          <p>터미널에서 메뉴가 뜨고, 사용자가 작업을 선택할 수 있다.</p>
+        </div>
+        <div class="box green col-3">
+          <strong>작업지시서 생성</strong>
+          <p>선택한 역할에 맞는 current_task.md가 자동 생성된다.</p>
+        </div>
+        <div class="box purple col-3">
+          <strong>Codex 연결 준비</strong>
+          <p>codex_runner.py에서 Codex 실행부를 분리해 둔다.</p>
+        </div>
+        <div class="box orange col-3">
+          <strong>파일 기반 회사</strong>
+          <p>기획서, 목차, 원고, 검수본이 폴더에 남는다.</p>
+        </div>
+      </div>
+      <div class="note">
+        <strong>진짜 1차 목표:</strong> “완성된 소설”이 아니라, <strong>Codex가 읽을 작업지시서를 하네스가 안정적으로 만들고,
+        결과 파일을 회사 폴더 구조에 쌓는 것</strong>이다.
+      </div>
+    </section>
+
+    <section>
+      <h2>7. 진행 순서 요약</h2>
+      <ol>
+        <li>Codex OAuth 로그인이 정상인지 확인한다.</li>
+        <li>Codex가 로컬 파일을 읽고 쓰는지 테스트한다.</li>
+        <li>Python 터미널 메뉴형 하네스를 만든다.</li>
+        <li>역할별 프롬프트 파일을 만든다.</li>
+        <li>메뉴 선택 → 작업지시서 생성까지 완성한다.</li>
+        <li>작업지시서를 Codex에게 실행시키는 구조를 붙인다.</li>
+        <li>기획서 → 목차 → 1화 → 편집 → 검수 → 최종본 순서로 확장한다.</li>
+        <li>5화 정도 안정화되면 자동 반복 기능을 붙인다.</li>
+        <li>그다음 CrewAI 등 멀티에이전트 자동화를 검토한다.</li>
+      </ol>
+    </section>
+
+    <div class="donebar">
+      <div class="bar"><div id="barFill"></div></div>
+      <div class="progressText" id="progressText">0% 완료</div>
+    </div>
+
+    <footer>
+      Codex 기반 AI 글쓰기 회사 Harness 로드맵 · API 없는 로컬 파일 기반 글쓰기 시스템
+    </footer>
+  </div>
+
+  <script>
+    const boxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+    const bar = document.getElementById('barFill');
+    const text = document.getElementById('progressText');
+    const storageKey = 'codex-writing-company-harness-todo-v1';
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        boxes.forEach((box, idx) => box.checked = !!saved[idx]);
+      } catch (e) {}
+      update();
+    }
+
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify(boxes.map(b => b.checked)));
+    }
+
+    function update() {
+      const done = boxes.filter(b => b.checked).length;
+      const pct = boxes.length ? Math.round(done / boxes.length * 100) : 0;
+      bar.style.width = pct + '%';
+      text.textContent = pct + '% 완료';
+    }
+
+    boxes.forEach(box => box.addEventListener('change', () => {
+      save();
+      update();
+    }));
+
+    load();
+  </script>
+</body>
+</html>

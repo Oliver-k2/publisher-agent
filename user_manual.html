@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 글쓰기 회사 하네스 사용 설명서</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --ink: #111827;
+      --muted: #5f6b7a;
+      --line: #d9dee8;
+      --paper: #ffffff;
+      --navy: #132238;
+      --blue: #2563eb;
+      --teal: #0f766e;
+      --amber: #b45309;
+      --green: #15803d;
+      --red: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 44px 20px 34px;
+      border-bottom: 6px solid var(--teal);
+    }
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #a7f3d0;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    h1 {
+      margin: 0;
+      max-width: 860px;
+      font-size: 42px;
+      line-height: 1.14;
+    }
+    header p {
+      max-width: 860px;
+      margin: 16px 0 0;
+      color: #d6dde8;
+      font-size: 18px;
+    }
+    main { padding: 26px 0 64px; }
+    section {
+      margin-top: 18px;
+      padding: 26px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 25px;
+      line-height: 1.25;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 18px;
+    }
+    p { margin: 0 0 12px; }
+    .lead {
+      color: var(--muted);
+      font-size: 17px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .card {
+      grid-column: span 4;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fbfcff;
+    }
+    .card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+    .card p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .step {
+      min-height: 96px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--blue);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .step b {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .step span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .callout {
+      margin: 16px 0 0;
+      padding: 14px 16px;
+      border-left: 5px solid var(--teal);
+      background: #ecfdf5;
+      border-radius: 6px;
+    }
+    .warn {
+      border-left-color: var(--amber);
+      background: #fffbeb;
+    }
+    code, pre { font-family: Consolas, "SFMono-Regular", Menlo, monospace; }
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #eef2f7;
+    }
+    pre {
+      overflow: auto;
+      padding: 15px;
+      color: #e5edf8;
+      background: #101827;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f0f4f9; }
+    tr:last-child td { border-bottom: 0; }
+    .ok { color: var(--green); font-weight: 700; }
+    .danger { color: var(--red); font-weight: 700; }
+    footer {
+      padding: 28px 0 40px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+    @media (max-width: 860px) {
+      h1 { font-size: 31px; }
+      .card { grid-column: span 12; }
+      .flow { grid-template-columns: 1fr; }
+      section { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <span class="eyebrow">CEO용 설명서</span>
+      <h1>AI 글쓰기 회사 하네스 사용 설명서</h1>
+      <p>
+        이 문서는 사람인 당신이 이 로컬 글쓰기 회사를 어떻게 운영하면 되는지 설명합니다.
+        하네스는 원고를 직접 쓰는 프로그램이 아니라, Codex에게 일을 맡기고 결과 파일을 회수하는 회사 운영 시스템입니다.
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2>1. 이 회사가 하는 일</h2>
+      <p class="lead">
+        당신은 CEO입니다. 장르, 방향, 취향, 수정 요청을 말합니다.
+        하네스는 그 말을 직원별 작업지시서로 바꾸고, Codex가 읽을 파일을 만들고, 결과물이 정해진 위치에 생겼는지 확인합니다.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <strong>당신: CEO</strong>
+          <p>작품의 방향을 정하고 승인합니다. 원고를 직접 붙잡고 고치기보다 요청과 판단에 집중합니다.</p>
+        </div>
+        <div class="card">
+          <strong>하네스: 운영 시스템</strong>
+          <p>상태 관리, 작업지시서 생성, 실행, 검증, 로그 기록을 맡습니다.</p>
+        </div>
+        <div class="card">
+          <strong>Codex: 작업 직원</strong>
+          <p>작업지시서를 읽고 지정된 파일에 기획, 목차, 초안, 편집본, 검수본을 작성합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 가장 먼저 할 일</h2>
+      <pre>python main.py</pre>
+      <p>
+        위 명령을 실행하면 메뉴가 열립니다. 처음에는 <code>dummy</code> 모드입니다.
+        이 모드는 실제 Codex를 호출하지 않고 샘플 파일만 만들어서 회사 운영 흐름이 잘 움직이는지 확인합니다.
+      </p>
+      <div class="callout">
+        처음에는 <strong>1. 새 책 만들기</strong>를 선택하고 제목과 장르를 입력하세요.
+        그 다음 추천 순서대로 <strong>2 -> 3 -> 4 -> 5 -> 6 -> 7</strong>을 진행하면 됩니다.
+      </div>
+    </section>
+
+    <section>
+      <h2>3. 전체 흐름</h2>
+      <div class="flow" aria-label="작업 흐름">
+        <div class="step"><b>CEO 요청</b><span>당신이 장르, 분위기, 수정 요청을 입력합니다.</span></div>
+        <div class="step"><b>상태 확인</b><span><code>project.json</code>에서 현재 단계를 읽습니다.</span></div>
+        <div class="step"><b>작업지시서</b><span><code>tasks/current_task.md</code>를 만듭니다.</span></div>
+        <div class="step"><b>Codex 실행</b><span><code>dummy</code> 또는 <code>live</code> 모드로 실행합니다.</span></div>
+        <div class="step"><b>결과 회수</b><span>출력 파일 존재 여부를 확인하고 로그를 남깁니다.</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. 메뉴별 의미</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>메뉴</th>
+            <th>역할</th>
+            <th>결과 파일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1. 새 책 만들기</td><td>프로젝트 초기화</td><td><code>projects/book_001/project.json</code></td></tr>
+          <tr><td>2. 기획 생성</td><td>Planner</td><td><code>projects/book_001/story_bible.md</code></td></tr>
+          <tr><td>3. 목차 생성</td><td>Outliner</td><td><code>projects/book_001/outline.md</code></td></tr>
+          <tr><td>4. 챕터 초안 생성</td><td>Writer</td><td><code>projects/book_001/chapters/ch001_draft.md</code></td></tr>
+          <tr><td>5. 편집본 생성</td><td>Editor</td><td><code>projects/book_001/chapters/ch001_edited.md</code></td></tr>
+          <tr><td>6. 설정 검수</td><td>Continuity Checker</td><td><code>projects/book_001/reviews/ch001_continuity.md</code></td></tr>
+          <tr><td>7. 최종본 생성</td><td>Finalizer</td><td><code>projects/book_001/chapters/ch001_final.md</code></td></tr>
+          <tr><td>8. 현재 상태 보기</td><td>상태 확인</td><td>현재 단계와 산출물 목록 출력</td></tr>
+          <tr><td>9. 실행 모드 변경</td><td>dummy/live 전환</td><td><code>project.json</code>의 <code>mode</code> 변경</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. dummy 모드와 live 모드</h2>
+      <h3>dummy 모드</h3>
+      <p>
+        안전한 연습 모드입니다. 실제 Codex를 호출하지 않습니다.
+        하네스가 작업지시서를 만들고, 지정된 출력 위치에 샘플 결과 파일을 만듭니다.
+      </p>
+      <h3>live 모드</h3>
+      <p>
+        Codex CLI를 실제로 호출할 준비가 된 모드입니다.
+        OpenAI API 키가 아니라, 로컬에서 로그인된 Codex OAuth 세션을 사용합니다.
+      </p>
+      <pre>codex exec --skip-git-repo-check -C &lt;project-root&gt; "&lt;task prompt&gt;"</pre>
+      <div class="callout warn">
+        live 모드로 바꾸기 전에 터미널에서 <code>codex --version</code>과 <code>codex exec --help</code>가 정상 동작하는지 확인하세요.
+      </div>
+    </section>
+
+    <section>
+      <h2>6. 중요한 파일</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>파일 또는 폴더</th>
+            <th>뜻</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>main.py</code></td><td>CEO가 실행하는 메뉴 프로그램입니다.</td></tr>
+          <tr><td><code>harness/</code></td><td>상태 관리, 작업지시서 생성, 실행, 검증, 로그를 맡는 엔진입니다.</td></tr>
+          <tr><td><code>prompts/</code></td><td>직원별 역할 카드입니다.</td></tr>
+          <tr><td><code>tasks/current_task.md</code></td><td>Codex가 읽을 최신 작업지시서입니다.</td></tr>
+          <tr><td><code>projects/book_001/</code></td><td>첫 번째 책의 상태와 산출물이 모이는 곳입니다.</td></tr>
+          <tr><td><code>logs/runs.jsonl</code></td><td>실행할 때마다 생기는 로그입니다. Git에는 올리지 않습니다.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>7. 운영 규칙</h2>
+      <p><span class="ok">좋은 사용법:</span> 한 번에 하나의 작업만 시키고, 결과 파일을 확인한 뒤 다음 단계로 넘어갑니다.</p>
+      <p><span class="ok">좋은 요청:</span> “잔잔한 SF, 20대 독자, 우울하지만 따뜻한 분위기, 폭력 묘사는 피하기”처럼 방향을 명확히 씁니다.</p>
+      <p><span class="danger">피할 것:</span> 출력 파일 경로를 무시하고 아무 곳에나 원고를 만들게 하는 요청은 회사 운영 흐름을 깨뜨립니다.</p>
+    </section>
+
+    <section>
+      <h2>8. 문제 해결</h2>
+      <h3>메뉴가 안 열린다</h3>
+      <pre>python --version
+python main.py</pre>
+      <h3>Codex live 실행이 안 된다</h3>
+      <pre>codex --version
+codex exec --help</pre>
+      <p>두 명령이 실패하면 먼저 Codex 로그인 또는 설치 상태를 확인해야 합니다.</p>
+      <h3>결과 파일이 없다</h3>
+      <p>
+        하네스가 <code>tasks/correction_task.md</code>를 만들 수 있습니다.
+        그 파일은 “누락된 출력 파일을 다시 만들라”는 재시도 지시서입니다.
+      </p>
+    </section>
+
+    <section>
+      <h2>9. 테스트</h2>
+      <p>하네스가 기본 계약을 지키는지 확인하려면 아래 명령을 실행합니다.</p>
+      <pre>python -m unittest tests.test_harness_mvp -v</pre>
+    </section>
+  </main>
+
+  <footer>
+    AI 글쓰기 회사 하네스 MVP - 사람 CEO를 위한 로컬 운영 설명서
+  </footer>
+</body>
+</html>

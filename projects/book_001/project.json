@@ -1,0 +1,11 @@
+{
+  "project_id": "book_001",
+  "title": "Untitled Book",
+  "genre": "미정",
+  "phase": "created",
+  "current_chapter": 1,
+  "mode": "dummy",
+  "artifacts": {},
+  "decisions": [],
+  "runs": []
+}
