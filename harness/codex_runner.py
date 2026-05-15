@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -85,14 +86,23 @@ def _run_live(*, root: Path, task_file: Path, expected_output: Path) -> CodexRun
         str(root),
         task_prompt,
     ]
+    output_lines: list[str] = []
     try:
-        completed = subprocess.run(
+        process = subprocess.Popen(
             command,
             cwd=root,
             text=True,
-            capture_output=True,
-            check=False,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,
         )
+        if process.stdout is not None:
+            for line in process.stdout:
+                _write_console(line)
+                output_lines.append(line)
+        returncode = process.wait()
     except FileNotFoundError as exc:
         return CodexRunResult(
             success=False,
@@ -101,14 +111,38 @@ def _run_live(*, root: Path, task_file: Path, expected_output: Path) -> CodexRun
             returncode=127,
             expected_output=expected_output,
         )
-    output = (completed.stdout + "\n" + completed.stderr).strip()
+    except OSError as exc:
+        return CodexRunResult(
+            success=False,
+            mode="live",
+            message=f"Codex executable could not be launched: {exc}",
+            returncode=1,
+            expected_output=expected_output,
+        )
+    output = "".join(output_lines).strip()
     return CodexRunResult(
-        success=completed.returncode == 0,
+        success=returncode == 0,
         mode="live",
-        message=output or f"codex exec exited with {completed.returncode}",
-        returncode=completed.returncode,
+        message=output or f"codex exec exited with {returncode}",
+        returncode=returncode,
         expected_output=expected_output,
     )
+
+
+def _write_console(text: str) -> None:
+    try:
+        sys.stdout.write(text)
+        sys.stdout.flush()
+    except UnicodeEncodeError:
+        encoding = sys.stdout.encoding or "utf-8"
+        encoded = text.encode(encoding, errors="replace")
+        buffer = getattr(sys.stdout, "buffer", None)
+        if buffer is not None:
+            buffer.write(encoded)
+            buffer.flush()
+            return
+        sys.stdout.write(encoded.decode(encoding, errors="replace"))
+        sys.stdout.flush()
 
 
 def _resolve_codex_executable() -> Path | None:

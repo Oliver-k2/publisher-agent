@@ -20,15 +20,18 @@ codex exec --skip-git-repo-check -C <project-root> "<task prompt>"
 
 ## 메뉴
 
-- 1. 새 책 만들기: `projects/book_001/project.json`을 초기화합니다.
-- 2. 기획 생성: `projects/book_001/story_bible.md`를 목표로 작업지시서를 만듭니다.
-- 3. 목차 생성: `projects/book_001/outline.md`를 목표로 작업지시서를 만듭니다.
-- 4. 챕터 초안 생성: `projects/book_001/chapters/ch001_draft.md`를 목표로 작업지시서를 만듭니다.
-- 5. 편집본 생성: `projects/book_001/chapters/ch001_edited.md`를 목표로 작업지시서를 만듭니다.
-- 6. 설정 검수: `projects/book_001/reviews/ch001_continuity.md`를 목표로 작업지시서를 만듭니다.
-- 7. 최종본 생성: `projects/book_001/chapters/ch001_final.md`를 목표로 작업지시서를 만듭니다.
+- 1. 새 책 만들기: 다음 번호의 책 폴더(`projects/book_002` 등)를 만들고 현재 책으로 선택합니다.
+- 2. 기획 생성: 현재 선택된 책의 `story_bible.md`를 목표로 작업지시서를 만듭니다.
+- 3. 목차 생성: 현재 선택된 책의 `outline.md`를 목표로 작업지시서를 만듭니다.
+- 4. 챕터 초안 생성: 현재 선택된 책의 `chapters/ch001_draft.md`를 목표로 작업지시서를 만듭니다.
+- 5. 편집본 생성: 현재 선택된 책의 `chapters/ch001_edited.md`를 목표로 작업지시서를 만듭니다.
+- 6. 설정 검수: 현재 선택된 책의 `reviews/ch001_continuity.md`를 목표로 작업지시서를 만듭니다.
+- 7. 최종본 생성: 현재 선택된 책의 `chapters/ch001_final.md`를 목표로 작업지시서를 만듭니다.
 - 8. 현재 상태 보기: 프로젝트 상태와 산출물 목록을 보여줍니다.
 - 9. 실행 모드 변경: `dummy`와 `live`를 전환합니다.
+- 10. 책 선택: 기존 책 목록에서 이어서 작업할 책을 선택합니다.
+
+현재 선택된 책은 `projects/current_project.txt`에 저장됩니다. 이 파일이 없으면 기본값으로 `book_001`을 사용합니다.
 
 ## 하네스 파일
 

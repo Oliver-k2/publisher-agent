@@ -9,8 +9,13 @@ class ResultCheck:
     message: str
 
 
-def check_result(expected_output: Path) -> ResultCheck:
+def check_result(expected_output: Path, *, newer_than: float | None = None) -> ResultCheck:
     if expected_output.exists() and expected_output.is_file():
+        content = expected_output.read_text(encoding="utf-8", errors="replace")
+        if not content.strip():
+            return ResultCheck(False, expected_output, f"empty: {expected_output}")
+        if newer_than is not None and expected_output.stat().st_mtime < newer_than:
+            return ResultCheck(False, expected_output, f"stale: {expected_output}")
         return ResultCheck(True, expected_output, f"found: {expected_output}")
     return ResultCheck(False, expected_output, f"not found: {expected_output}")
 

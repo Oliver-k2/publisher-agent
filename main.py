@@ -3,13 +3,22 @@ from pathlib import Path
 from harness.codex_runner import run_codex
 from harness.logger import append_run_log
 from harness.result_checker import check_result, create_correction_task
-from harness.state_manager import ensure_project, load_project, save_project, update_after_run
+from harness.state_manager import (
+    create_project,
+    ensure_project,
+    get_active_project_dir,
+    list_projects,
+    load_project,
+    save_active_project_id,
+    save_project,
+    update_after_run,
+)
 from harness.task_builder import build_task
 from harness.workflow import get_action, next_recommendation
 
 
 ROOT = Path(__file__).resolve().parent
-PROJECT_DIR = ROOT / "projects" / "book_001"
+PROJECTS_DIR = ROOT / "projects"
 LOG_FILE = ROOT / "logs" / "runs.jsonl"
 
 
@@ -19,7 +28,8 @@ def main() -> None:
     print("사용자는 CEO, Codex는 작업 직원, 하네스는 운영 시스템입니다.")
 
     while True:
-        state = ensure_project(PROJECT_DIR)
+        project_dir = get_current_project_dir()
+        state = ensure_project(project_dir)
         print_menu(state)
         choice = input("메뉴 선택: ").strip()
 
@@ -35,6 +45,9 @@ def main() -> None:
         if choice == "9":
             toggle_mode()
             continue
+        if choice == "10":
+            select_book()
+            continue
         if choice in {"2", "3", "4", "5", "6", "7"}:
             run_workflow(choice)
             continue
@@ -47,16 +60,17 @@ def bootstrap_workspace() -> None:
         ROOT / "harness",
         ROOT / "prompts",
         ROOT / "tasks" / "history",
-        ROOT / "projects" / "book_001" / "chapters",
-        ROOT / "projects" / "book_001" / "reviews",
-        ROOT / "projects" / "book_001" / "summaries",
-        ROOT / "projects" / "book_001" / "final",
+        PROJECTS_DIR,
         ROOT / "logs",
         ROOT / "templates",
         ROOT / "future_crewai",
     ]:
         path.mkdir(parents=True, exist_ok=True)
-    ensure_project(PROJECT_DIR)
+    ensure_project(get_current_project_dir())
+
+
+def get_current_project_dir() -> Path:
+    return get_active_project_dir(PROJECTS_DIR)
 
 
 def print_menu(state: dict) -> None:
@@ -70,8 +84,9 @@ def print_menu(state: dict) -> None:
     print("7. 최종본 생성")
     print("8. 현재 상태 보기")
     print("9. 실행 모드 변경: dummy / live")
+    print("10. 책 선택")
     print("0. 종료")
-    print(f"현재 책: {state.get('title')} / 장르: {state.get('genre')} / 단계: {state.get('phase')}")
+    print(f"현재 책: {state.get('project_id')} - {state.get('title')} / 장르: {state.get('genre')} / 단계: {state.get('phase')}")
     print(f"실행 모드: {state.get('mode', 'dummy')}")
     print(f"추천 다음 단계: {next_recommendation(state.get('phase', 'created'))}")
 
@@ -79,23 +94,23 @@ def print_menu(state: dict) -> None:
 def create_new_book() -> None:
     title = input("책 제목: ").strip() or "Untitled Book"
     genre = input("장르: ").strip() or "미정"
-    state = ensure_project(PROJECT_DIR, title=title, genre=genre)
-    state["title"] = title
-    state["genre"] = genre
-    state["phase"] = "created"
-    state["current_chapter"] = 1
-    state["artifacts"] = {}
-    state["decisions"] = []
-    state["runs"] = []
-    save_project(PROJECT_DIR, state)
-    print(f"새 책 프로젝트를 준비했습니다: {title}")
+    project_dir, state = create_project(PROJECTS_DIR, title=title, genre=genre)
+    save_active_project_id(PROJECTS_DIR, state["project_id"])
+    print(f"새 책 프로젝트를 준비하고 선택했습니다: {state['project_id']} - {title}")
 
 
 def run_workflow(choice: str) -> None:
-    state = load_project(PROJECT_DIR)
+    project_dir = get_current_project_dir()
+    state = load_project(project_dir)
     action = get_action(choice)
     user_request = input("CEO 추가 요청(없으면 Enter): ").strip()
-    built_task = build_task(root=ROOT, action=action, state=state, user_request=user_request)
+    built_task = build_task(
+        root=ROOT,
+        project_dir=project_dir,
+        action=action,
+        state=state,
+        user_request=user_request,
+    )
     mode = state.get("mode", "dummy")
 
     run = run_codex(
@@ -105,7 +120,10 @@ def run_workflow(choice: str) -> None:
         role=built_task.role,
         mode=mode,
     )
-    check = check_result(built_task.expected_output)
+    check = check_result(
+        built_task.expected_output,
+        newer_than=built_task.task_file.stat().st_mtime,
+    )
     success = run.success and check.success
     message = run.message if success else f"{run.message}; {check.message}"
     record = append_run_log(
@@ -121,7 +139,7 @@ def run_workflow(choice: str) -> None:
 
     if success:
         update_after_run(
-            PROJECT_DIR,
+            project_dir,
             state,
             phase=action.phase,
             artifact_key=action.role,
@@ -144,7 +162,7 @@ def run_workflow(choice: str) -> None:
 
 
 def show_status() -> None:
-    state = load_project(PROJECT_DIR)
+    state = load_project(get_current_project_dir())
     print("\n--- 현재 상태 ---")
     print(f"project_id: {state.get('project_id')}")
     print(f"title: {state.get('title')}")
@@ -159,11 +177,47 @@ def show_status() -> None:
 
 
 def toggle_mode() -> None:
-    state = load_project(PROJECT_DIR)
+    project_dir = get_current_project_dir()
+    state = load_project(project_dir)
     current = state.get("mode", "dummy")
     state["mode"] = "live" if current == "dummy" else "dummy"
-    save_project(PROJECT_DIR, state)
+    save_project(project_dir, state)
     print(f"실행 모드가 {state['mode']}로 변경되었습니다.")
+
+
+def select_book() -> None:
+    project_ids = list_projects(PROJECTS_DIR)
+    if not project_ids:
+        print("선택할 책이 없습니다. 먼저 1번으로 새 책을 만들어 주세요.")
+        return
+
+    active_id = get_current_project_dir().name
+    print("\n--- 책 목록 ---")
+    for index, project_id in enumerate(project_ids, start=1):
+        state = load_project(PROJECTS_DIR / project_id)
+        marker = "*" if project_id == active_id else " "
+        print(
+            f"{index}. {marker} {project_id} - {state.get('title')} "
+            f"/ 장르: {state.get('genre')} / 단계: {state.get('phase')}"
+        )
+
+    selected = input("선택할 책 번호(취소는 Enter): ").strip()
+    if not selected:
+        print("책 선택을 취소했습니다.")
+        return
+    if not selected.isdigit():
+        print("숫자로 선택해 주세요.")
+        return
+
+    index = int(selected)
+    if index < 1 or index > len(project_ids):
+        print("목록에 없는 번호입니다.")
+        return
+
+    project_id = project_ids[index - 1]
+    save_active_project_id(PROJECTS_DIR, project_id)
+    state = load_project(PROJECTS_DIR / project_id)
+    print(f"현재 책을 선택했습니다: {project_id} - {state.get('title')}")
 
 
 if __name__ == "__main__":

@@ -17,20 +17,23 @@ class BuiltTask:
 def build_task(
     *,
     root: Path,
+    project_dir: Path,
     action: WorkflowAction,
     state: dict[str, Any],
     user_request: str = "",
 ) -> BuiltTask:
     root = root.resolve()
+    project_id = state.get("project_id", project_dir.name)
     task_file = root / "tasks" / "current_task.md"
     task_file.parent.mkdir(parents=True, exist_ok=True)
     history_dir = root / "tasks" / "history"
     history_dir.mkdir(parents=True, exist_ok=True)
 
-    expected_output = root / action.output_path
+    output_path = _project_output_path(action.output_path, project_id)
+    expected_output = root / output_path
     prompt_path = Path("prompts") / action.prompt_file
     prompt_text = _read_optional(root / prompt_path, "역할 카드가 아직 없습니다.")
-    input_files = _input_files_for(action.menu)
+    input_files = _input_files_for(action.menu, project_id)
     artifacts = state.get("artifacts", {})
 
     task_text = f"""# AI 글쓰기 회사 작업지시서
@@ -42,9 +45,7 @@ def build_task(
 - 역할: {action.role}
 - 역할 카드: {prompt_path.as_posix()}
 
-```text
-{prompt_text.strip()}
-```
+{_fenced_code_block(prompt_text.strip(), "text")}
 
 ## CEO 요청
 {user_request.strip() or "추가 요청 없음"}
@@ -65,7 +66,7 @@ def build_task(
 ## 출력 파일
 반드시 아래 파일 하나를 생성하거나 갱신한다.
 
-- {action.output_path.as_posix()}
+- {output_path.as_posix()}
 
 ## 금지사항
 - OpenAI API 키나 외부 API 호출을 요구하지 않는다.
@@ -74,7 +75,7 @@ def build_task(
 - 모르는 내용을 사실처럼 확정하지 말고 가정이라고 표시한다.
 
 ## 완료 조건
-- 출력 파일 `{action.output_path.as_posix()}`가 존재한다.
+- 출력 파일 `{output_path.as_posix()}`가 존재한다.
 - 결과물 첫 부분에 이번 작업의 목적과 사용한 입력 파일을 짧게 적는다.
 - 다음 단계 진행에 필요한 메모를 마지막에 `다음 작업 메모`로 남긴다.
 """
@@ -98,16 +99,39 @@ def _read_optional(path: Path, fallback: str) -> str:
     return fallback
 
 
-def _input_files_for(menu: str) -> list[Path]:
+def _fenced_code_block(text: str, language: str = "") -> str:
+    longest_tick_run = 0
+    current_run = 0
+    for char in text:
+        if char == "`":
+            current_run += 1
+            longest_tick_run = max(longest_tick_run, current_run)
+        else:
+            current_run = 0
+
+    fence = "`" * max(3, longest_tick_run + 1)
+    language_suffix = language if language else ""
+    return f"{fence}{language_suffix}\n{text}\n{fence}"
+
+
+def _project_output_path(output_path: Path, project_id: str) -> Path:
+    parts = output_path.parts
+    if len(parts) >= 2 and parts[0] == "projects":
+        return Path(parts[0]) / project_id / Path(*parts[2:])
+    return output_path
+
+
+def _input_files_for(menu: str, project_id: str = "book_001") -> list[Path]:
+    project_root = Path("projects") / project_id
     files = {
         "2": [],
-        "3": [Path("projects/book_001/story_bible.md")],
-        "4": [Path("projects/book_001/story_bible.md"), Path("projects/book_001/outline.md")],
-        "5": [Path("projects/book_001/chapters/ch001_draft.md")],
-        "6": [Path("projects/book_001/story_bible.md"), Path("projects/book_001/chapters/ch001_edited.md")],
+        "3": [project_root / "story_bible.md"],
+        "4": [project_root / "story_bible.md", project_root / "outline.md"],
+        "5": [project_root / "chapters" / "ch001_draft.md"],
+        "6": [project_root / "story_bible.md", project_root / "chapters" / "ch001_edited.md"],
         "7": [
-            Path("projects/book_001/chapters/ch001_edited.md"),
-            Path("projects/book_001/reviews/ch001_continuity.md"),
+            project_root / "chapters" / "ch001_edited.md",
+            project_root / "reviews" / "ch001_continuity.md",
         ],
     }
     return files.get(menu, [])

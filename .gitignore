@@ -5,3 +5,4 @@ __pycache__/
 .ruff_cache/
 logs/*.jsonl
 tasks/history/*.md
+projects/current_project.txt
