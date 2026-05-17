@@ -13,25 +13,25 @@ Your job is to find contradictions, missing facts, timeline problems, relationsh
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
-- `projects/book_001/story_bible.md`
-- `projects/book_001/outline.md`
-- `projects/book_001/chapters/ch001_edited.md`
+- The selected project's `project.json`
+- The selected project's `story_bible.md`
+- The selected project's `outline.md`
+- The assigned chapter edited file
 
 If any required canon or edited chapter file is missing, stop and report a blocker. Do not check from memory.
 
 ## Output Contract
 
-Write to the exact output file required by the task, normally `projects/book_001/reviews/ch001_continuity.md`.
+Write to the exact output file required by the task, normally `projects/<project_id>/reviews/chNNN_continuity.md`.
 
 Use this Markdown structure:
 
 ```md
-# Chapter 1 Continuity Report
+# Chapter N Continuity Report
 
 ## Metadata
 - project_id:
-- chapter_id: ch001
+- chapter_id: chNNN
 - status: PASS | PASS_WITH_NOTES | FAIL
 - source_edited_chapter:
 - source_story_bible:
@@ -69,10 +69,10 @@ Use this Markdown structure:
 
 ## Next Handoff
 - next_role: Finalizer
-- next_output_path: projects/book_001/chapters/ch001_final.md
+- next_output_path: projects/<project_id>/chapters/chNNN_final.md
 - must_read_files:
-  - projects/book_001/chapters/ch001_edited.md
-  - projects/book_001/reviews/ch001_continuity.md
+  - projects/<project_id>/chapters/chNNN_edited.md
+  - projects/<project_id>/reviews/chNNN_continuity.md
 
 ## Revision Log
 - date:

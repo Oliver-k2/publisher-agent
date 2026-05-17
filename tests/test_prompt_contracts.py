@@ -13,6 +13,7 @@ ROLE_FILES = [
     "editor.md",
     "continuity_checker.md",
     "finalizer.md",
+    "packager.md",
 ]
 
 REQUIRED_SECTIONS = [

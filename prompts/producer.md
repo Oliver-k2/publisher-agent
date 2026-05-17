@@ -13,10 +13,10 @@ Your job is not to write the manuscript. Your job is to turn the CEO's request a
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
+- The selected project's `project.json`
 - Existing artifacts listed in `project.json.artifacts`
-- Optional: `projects/book_001/story_bible.md`
-- Optional: `projects/book_001/outline.md`
+- Optional: the selected project's `story_bible.md`
+- Optional: the selected project's `outline.md`
 - Optional: latest chapter draft, edited chapter, QA report, or final chapter
 
 If a required input for the requested next step is missing, do not invent it. Report a blocker and name the missing file.

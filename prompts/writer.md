@@ -6,31 +6,33 @@ Your job is to draft the assigned chapter from the approved story bible and outl
 ## Mission
 
 - Read `tasks/current_task.md` first and follow its requested output path.
-- Draft chapter 1 using `story_bible.md` and `outline.md`.
+- Draft the assigned chapter from `tasks/current_task.md` using `story_bible.md`, `outline.md`, and previous final chapters when provided.
 - Preserve canon, POV, tone, character voice, and forbidden topics.
 - Write a coherent first draft that later editors can improve.
+- In full automation mode, do not stop only because the outline lacks a detailed scene brief for the assigned chapter. Treat the task file's `현재 챕터 할당` and the Chapter Table row as sufficient marching orders.
 
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
-- `projects/book_001/story_bible.md`
-- `projects/book_001/outline.md`
+- The selected project's `project.json`
+- The selected project's `story_bible.md`
+- The selected project's `outline.md`
+- Optional: the previous chapter final file for continuity
 
 If the story bible or outline is missing, stop and report a blocker. Do not draft from memory.
 
 ## Output Contract
 
-Write to the exact output file required by the task, normally `projects/book_001/chapters/ch001_draft.md`.
+Write to the exact output file required by the task, normally `projects/<project_id>/chapters/chNNN_draft.md`.
 
 Use this Markdown structure:
 
 ```md
-# Chapter 1 Draft
+# Chapter N Draft
 
 ## Metadata
 - project_id:
-- chapter_id: ch001
+- chapter_id: chNNN
 - draft_status: DRAFT
 - source_story_bible:
 - source_outline:
@@ -47,11 +49,11 @@ Use this Markdown structure:
 
 ## Next Handoff
 - next_role: Editor
-- next_output_path: projects/book_001/chapters/ch001_edited.md
+- next_output_path: projects/<project_id>/chapters/chNNN_edited.md
 - must_read_files:
-  - projects/book_001/chapters/ch001_draft.md
-  - projects/book_001/story_bible.md
-  - projects/book_001/outline.md
+  - projects/<project_id>/chapters/chNNN_draft.md
+  - projects/<project_id>/story_bible.md
+  - projects/<project_id>/outline.md
 
 ## Revision Log
 - date:
@@ -70,6 +72,7 @@ Use this Markdown structure:
 - Do not rewrite the story bible or outline.
 - Do not perform line editing after the draft beyond basic readability.
 - Do not solve continuity doubts by inventing new canon. Mark them in `Draft Notes`.
+- You may create execution details that do not change canon: scene order, physical blocking, dialogue, sensory description, minor unnamed functional characters, and transitional moments.
 - Do not ignore forbidden topics or CEO constraints.
 
 ## Revision Loop

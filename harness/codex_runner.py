@@ -5,6 +5,12 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from .result_checker import required_markers_for
+
+
+DEFAULT_CODEX_MODEL = "gpt-5.5"
+CODEX_MODEL_ENV = "CODEX_MODEL"
+
 
 @dataclass(frozen=True)
 class CodexRunResult:
@@ -33,11 +39,16 @@ def run_codex(
 def _run_dummy(*, task_file: Path, expected_output: Path, role: str) -> CodexRunResult:
     expected_output.parent.mkdir(parents=True, exist_ok=True)
     task_excerpt = task_file.read_text(encoding="utf-8")[:1200] if task_file.exists() else ""
+    required_sections = "\n\n".join(_dummy_section(marker) for marker in required_markers_for(role, expected_output))
+    semantic_fields = _dummy_semantic_fields(role)
     expected_output.write_text(
         f"""# Dummy result: {role}
 
 이 파일은 하네스 MVP의 안전한 dummy 모드가 만든 샘플 산출물입니다.
 실제 원고 품질을 판단하기 위한 결과가 아니라, 작업지시서 생성과 결과 회수 흐름을 검증하기 위한 파일입니다.
+
+{required_sections}
+{semantic_fields}
 
 ## 사용한 작업지시서 일부
 
@@ -57,6 +68,27 @@ live 모드로 전환하면 Codex OAuth 세션이 같은 작업지시서를 읽�
         returncode=0,
         expected_output=expected_output,
     )
+
+
+def _dummy_section(marker: str) -> str:
+    if marker.startswith("#"):
+        return f"{marker}\n- dummy: true"
+    return f"{marker}\n- dummy: true"
+
+
+def _dummy_semantic_fields(role: str) -> str:
+    if role == "continuity_checker":
+        return (
+            "\n- status: PASS\n"
+            "\n## Blockers\n"
+            "- 없음\n\n"
+            "## Final Gate Recommendation\n"
+            "- proceed_to_finalizer: yes\n"
+            "- reason: dummy pass\n"
+        )
+    if role == "finalizer":
+        return "\n- final_status: READY\n"
+    return ""
 
 
 def _run_live(*, root: Path, task_file: Path, expected_output: Path) -> CodexRunResult:
@@ -82,6 +114,10 @@ def _run_live(*, root: Path, task_file: Path, expected_output: Path) -> CodexRun
         str(codex_executable),
         "exec",
         "--skip-git-repo-check",
+        "--model",
+        _resolve_codex_model(),
+        "--sandbox",
+        "workspace-write",
         "-C",
         str(root),
         task_prompt,
@@ -152,10 +188,6 @@ def _resolve_codex_executable() -> Path | None:
         if configured_path.exists():
             return configured_path
 
-    discovered = shutil.which("codex")
-    if discovered:
-        return Path(discovered)
-
     candidates = []
     local_app_data = os.environ.get("LOCALAPPDATA")
     if local_app_data:
@@ -165,4 +197,13 @@ def _resolve_codex_executable() -> Path | None:
     for candidate in candidates:
         if candidate.exists():
             return candidate
+
+    discovered = shutil.which("codex")
+    if discovered:
+        return Path(discovered)
     return None
+
+
+def _resolve_codex_model() -> str:
+    configured = os.environ.get(CODEX_MODEL_ENV, "").strip()
+    return configured or DEFAULT_CODEX_MODEL

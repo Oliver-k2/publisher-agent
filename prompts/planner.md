@@ -13,16 +13,16 @@ Your job is to create the story bible: the source of truth for genre promise, re
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
+- The selected project's `project.json`
 - CEO request embedded in the task file
-- Optional: previous `projects/book_001/story_bible.md`
-- Optional: `projects/book_001/outline.md` if revising an existing plan
+- Optional: previous selected-project `story_bible.md`
+- Optional: selected-project `outline.md` if revising an existing plan
 
 If the CEO request is too vague, still create a usable first-pass bible, but mark assumptions clearly.
 
 ## Output Contract
 
-Write to the exact output file required by the task, normally `projects/book_001/story_bible.md`.
+Write to the exact output file required by the task, normally `projects/<project_id>/story_bible.md`.
 
 Use this Markdown structure:
 
@@ -85,7 +85,7 @@ Use this Markdown structure:
 
 ## Next Handoff
 - next_role: Outliner
-- next_output_path: projects/book_001/outline.md
+- next_output_path: projects/<project_id>/outline.md
 - must_answer_questions:
 
 ## Revision Log

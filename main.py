@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from harness.automation import run_full_automation
 from harness.codex_runner import run_codex
 from harness.logger import append_run_log
 from harness.result_checker import check_result, create_correction_task
@@ -12,9 +13,10 @@ from harness.state_manager import (
     save_active_project_id,
     save_project,
     update_after_run,
+    write_project_status,
 )
 from harness.task_builder import build_task
-from harness.workflow import get_action, next_recommendation
+from harness.workflow import get_action, next_recommendation_for_state
 
 
 ROOT = Path(__file__).resolve().parent
@@ -47,6 +49,9 @@ def main() -> None:
             continue
         if choice == "10":
             select_book()
+            continue
+        if choice == "11":
+            run_auto_mode()
             continue
         if choice in {"2", "3", "4", "5", "6", "7"}:
             run_workflow(choice)
@@ -85,10 +90,13 @@ def print_menu(state: dict) -> None:
     print("8. 현재 상태 보기")
     print("9. 실행 모드 변경: dummy / live")
     print("10. 책 선택")
+    print("11. 완전자동화 모드")
     print("0. 종료")
     print(f"현재 책: {state.get('project_id')} - {state.get('title')} / 장르: {state.get('genre')} / 단계: {state.get('phase')}")
+    print(f"챕터 진행: 현재 {state.get('current_chapter', 1)}장 / 총 {state.get('total_chapters') or '미정'}장")
+    print(f"완료 챕터: {_format_completed_chapters(state)}")
     print(f"실행 모드: {state.get('mode', 'dummy')}")
-    print(f"추천 다음 단계: {next_recommendation(state.get('phase', 'created'))}")
+    print(f"추천 다음 단계: {next_recommendation_for_state(state)}")
 
 
 def create_new_book() -> None:
@@ -123,6 +131,7 @@ def run_workflow(choice: str) -> None:
     check = check_result(
         built_task.expected_output,
         newer_than=built_task.task_file.stat().st_mtime,
+        role=built_task.role,
     )
     success = run.success and check.success
     message = run.message if success else f"{run.message}; {check.message}"
@@ -138,7 +147,7 @@ def run_workflow(choice: str) -> None:
     )
 
     if success:
-        update_after_run(
+        updated_state = update_after_run(
             project_dir,
             state,
             phase=action.phase,
@@ -146,10 +155,12 @@ def run_workflow(choice: str) -> None:
             artifact_path=built_task.expected_output.relative_to(ROOT),
             run_record=record,
         )
+        status_file = write_project_status(project_dir, updated_state)
         print(f"작업 완료: {built_task.label}")
         print(f"작업지시서: {built_task.task_file}")
         print(f"결과 파일: {built_task.expected_output}")
-        print(f"다음 추천: {action.next_menu}")
+        print(f"상태 대시보드: {status_file}")
+        print(f"다음 추천: {next_recommendation_for_state(updated_state)}")
         return
 
     correction = create_correction_task(
@@ -169,11 +180,20 @@ def show_status() -> None:
     print(f"genre: {state.get('genre')}")
     print(f"phase: {state.get('phase')}")
     print(f"current_chapter: {state.get('current_chapter')}")
+    print(f"total_chapters: {state.get('total_chapters') or '미정'}")
+    print(f"completed_chapters: {_format_completed_chapters(state)}")
     print(f"mode: {state.get('mode', 'dummy')}")
     print("artifacts:")
     for key, value in state.get("artifacts", {}).items():
         print(f"- {key}: {value}")
+    print("chapter_artifacts:")
+    for chapter, artifacts in sorted(state.get("chapter_artifacts", {}).items()):
+        print(f"- {chapter}:")
+        for key, value in sorted(artifacts.items()):
+            print(f"  - {key}: {value}")
     print(f"runs: {len(state.get('runs', []))}")
+    print(f"추천 다음 단계: {next_recommendation_for_state(state)}")
+    print(f"상태 대시보드: {write_project_status(get_current_project_dir(), state)}")
 
 
 def toggle_mode() -> None:
@@ -218,6 +238,43 @@ def select_book() -> None:
     save_active_project_id(PROJECTS_DIR, project_id)
     state = load_project(PROJECTS_DIR / project_id)
     print(f"현재 책을 선택했습니다: {project_id} - {state.get('title')}")
+
+
+def run_auto_mode() -> None:
+    print("\n--- 완전자동화 모드 ---")
+    print("CEO 최초 명령을 한 번만 입력하면 producer부터 최종 원고 패키징까지 순차 실행합니다.")
+    print("예: 300p 분량의 심리 스릴러 장편소설을 써줘. 제목은 악마소녀.")
+    ceo_request = input("CEO 최초 명령: ").strip()
+    if not ceo_request:
+        print("자동화를 취소했습니다. 최초 명령이 비어 있습니다.")
+        return
+
+    active_project_dir = get_current_project_dir()
+    summary = run_full_automation(
+        root=ROOT,
+        projects_dir=PROJECTS_DIR,
+        log_file=LOG_FILE,
+        ceo_request=ceo_request,
+        active_project_dir=active_project_dir,
+    )
+    print("\n--- 완전자동화 결과 ---")
+    print(f"프로젝트: {summary.project_dir}")
+    print(f"완료 단계 수: {len(summary.completed_steps)}")
+    if summary.success:
+        print(summary.message)
+        print(f"최종 원고: {summary.final_output}")
+        print(f"상태 대시보드: {summary.project_dir / 'project_status.md'}")
+        return
+    print("자동화가 중단되었습니다.")
+    print(f"사유: {summary.message}")
+    print(f"마지막까지 완료된 단계: {', '.join(summary.completed_steps) or '없음'}")
+
+
+def _format_completed_chapters(state: dict) -> str:
+    completed = state.get("completed_chapters", [])
+    if not completed:
+        return "없음"
+    return ", ".join(f"{int(chapter)}장" for chapter in completed)
 
 
 if __name__ == "__main__":

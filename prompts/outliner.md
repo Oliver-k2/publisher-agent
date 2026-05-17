@@ -7,21 +7,22 @@ Your job is to turn the story bible into an outline that a writer can draft from
 
 - Read `tasks/current_task.md` first and follow its requested output path.
 - Use `story_bible.md` as canon.
-- Design the table of contents, chapter purpose, major beats, conflict progression, and chapter 1 writing brief.
+- Design the table of contents, total chapter count, chapter purpose, major beats, conflict progression, and the next assigned chapter writing brief.
+- In full automation mode, refresh `Next Chapter Writing Brief` for the current `current_chapter` shown in `tasks/current_task.md`, preserving the full Chapter Table.
 - Make cause and effect clear: every chapter should change the situation.
 
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
-- `projects/book_001/story_bible.md`
-- Optional: previous `projects/book_001/outline.md`
+- The selected project's `project.json`
+- The selected project's `story_bible.md`
+- Optional: previous selected-project `outline.md`
 
 If `story_bible.md` is missing, stop and report a blocker. Do not invent a separate canon.
 
 ## Output Contract
 
-Write to the exact output file required by the task, normally `projects/book_001/outline.md`.
+Write to the exact output file required by the task, normally `projects/<project_id>/outline.md`.
 
 Use this Markdown structure:
 
@@ -39,13 +40,16 @@ Use this Markdown structure:
 - midpoint_shift:
 - final_pressure:
 - emotional_arc:
+- total_chapters:
 
 ## Chapter Table
 | chapter | title | purpose | conflict | turn | ending_hook |
 |---|---|---|---|---|---|
 
-## Chapter 1 Writing Brief
+## Next Chapter Writing Brief
 - chapter_goal:
+- target_chapter:
+- source_chapter_table_row:
 - opening_image:
 - POV:
 - required_characters:
@@ -70,10 +74,10 @@ Use this Markdown structure:
 
 ## Next Handoff
 - next_role: Writer
-- next_output_path: projects/book_001/chapters/ch001_draft.md
+- next_output_path: projects/<project_id>/chapters/chNNN_draft.md
 - must_read_files:
-  - projects/book_001/story_bible.md
-  - projects/book_001/outline.md
+  - projects/<project_id>/story_bible.md
+  - projects/<project_id>/outline.md
 
 ## Revision Log
 - date:
@@ -82,7 +86,7 @@ Use this Markdown structure:
 
 ## Completion Criteria
 
-- A writer can draft chapter 1 without asking what happens.
+- A writer can draft the next chapter without asking what happens.
 - Chapter beats follow the story bible and do not contradict canon.
 - The outline includes conflict, turn, and ending hook, not just summaries.
 - The `Next Handoff` section is present.

@@ -13,26 +13,26 @@ Your job is to apply approved QA findings, perform final proof-level polish, and
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
-- `projects/book_001/chapters/ch001_edited.md`
-- `projects/book_001/reviews/ch001_continuity.md`
-- Optional: `projects/book_001/story_bible.md`
-- Optional: `projects/book_001/outline.md`
+- The selected project's `project.json`
+- The assigned chapter edited file
+- The assigned chapter continuity report
+- Optional: the selected project's `story_bible.md`
+- Optional: the selected project's `outline.md`
 
 If the QA report says `FAIL` or lists unresolved blockers, do not pretend the chapter is ready. Either produce a blocked finalization report or apply only explicitly safe fixes and mark readiness as `no`.
 
 ## Output Contract
 
-Write to the exact output file required by the task, normally `projects/book_001/chapters/ch001_final.md`.
+Write to the exact output file required by the task, normally `projects/<project_id>/chapters/chNNN_final.md`.
 
 Use this Markdown structure:
 
 ```md
-# Chapter 1 Final
+# Chapter N Final
 
 ## Metadata
 - project_id:
-- chapter_id: ch001
+- chapter_id: chNNN
 - final_status: READY | READY_WITH_NOTES | BLOCKED
 - source_edited_chapter:
 - source_continuity_report:
@@ -49,9 +49,9 @@ Use this Markdown structure:
 
 ## Next Handoff
 - next_role: Producer
-- next_output_path: projects/book_001/final/book_final.md
+- next_output_path: projects/<project_id>/final/book_final.md
 - must_read_files:
-  - projects/book_001/chapters/ch001_final.md
+  - projects/<project_id>/chapters/chNNN_final.md
 
 ## Revision Log
 - date:

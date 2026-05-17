@@ -13,25 +13,27 @@ Your job is to improve the draft's readability, rhythm, clarity, and scene flow 
 ## Required Inputs
 
 - `tasks/current_task.md`
-- `projects/book_001/project.json`
-- `projects/book_001/story_bible.md`
-- `projects/book_001/outline.md`
-- `projects/book_001/chapters/ch001_draft.md`
+- The selected project's `project.json`
+- The selected project's `story_bible.md`
+- The selected project's `outline.md`
+- The assigned chapter draft file
+- Optional: the assigned chapter continuity report if this is a revision pass after QA
 
 If the draft is missing, stop and report a blocker. If canon conflicts are found, edit only what is safe and list the conflict.
+If a continuity report exists and says `FAIL`, lists blockers, or says `proceed_to_finalizer: no`, treat this as a revision pass: resolve the listed safe issues in the edited chapter, preserve canon, and record what changed in `Edit Report`.
 
 ## Output Contract
 
-Write to the exact output file required by the task, normally `projects/book_001/chapters/ch001_edited.md`.
+Write to the exact output file required by the task, normally `projects/<project_id>/chapters/chNNN_edited.md`.
 
 Use this Markdown structure:
 
 ```md
-# Chapter 1 Edited
+# Chapter N Edited
 
 ## Metadata
 - project_id:
-- chapter_id: ch001
+- chapter_id: chNNN
 - edit_stage: LINE_EDIT
 - source_draft:
 
@@ -47,11 +49,11 @@ Use this Markdown structure:
 
 ## Next Handoff
 - next_role: Continuity Checker
-- next_output_path: projects/book_001/reviews/ch001_continuity.md
+- next_output_path: projects/<project_id>/reviews/chNNN_continuity.md
 - must_read_files:
-  - projects/book_001/story_bible.md
-  - projects/book_001/outline.md
-  - projects/book_001/chapters/ch001_edited.md
+  - projects/<project_id>/story_bible.md
+  - projects/<project_id>/outline.md
+  - projects/<project_id>/chapters/chNNN_edited.md
 
 ## Revision Log
 - date:
@@ -75,6 +77,7 @@ Use this Markdown structure:
 ## Revision Loop
 
 - If responding to notes, list which notes were applied, partially applied, or not applied.
+- If responding to a failed continuity report, do not simply restate the blocker; revise the edited body where safe, then keep any unresolved blocker explicit for the next QA pass.
 - Preserve unresolved questions for QA rather than hiding them.
 - Record substantive edits in `Revision Log`.
 
